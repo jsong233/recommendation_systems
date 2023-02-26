@@ -82,4 +82,48 @@ The outline of the numerical experiments in this project is to first code matrix
 
 In order to measure the performances of our algorithms, every time we first randomly generate a $50\times 10$ matrix $\mathbf{M}$ as the ground-truth complete matrix, and the matrix is also of a certain fixed rank; then we set a probability $p$ of each entry in $\mathbf{M}$ to be observed and sample on $\mathbf{M}$ to obtain an artificial incomplete data matrix $\mathbf{A}$. Now we could apply different matrix completion solvers to the incomplete data matrix $\mathbf{A}$ and obtain the recovered complete matrix $\mathbf{X}$. By this mean, we are able to measure the performances of these algorithms by computing the errors between the complete matrix $\mathbf{M}$ and recovered matrix $\mathbf{X}$.  
 
-Choosing the hyperparameters for these algorithms is subtle but very important. Both direct SVD model and matrix factorization model need us to choose an appropriate $k$ which is the length of the latent vectors where $\mathbf{U} \in \mathbb{R}^{m\times k}, \mathbf{V} \in\mathbb{R}^{n\times k}$. If $k$ is too small, the error is expected to be very large since only a few features have been captured in $\mathbf{U}$ and $\mathbf{V}$, then $\mathbf{U}\mathbf {V}^T$ can not represent the whole complete matrix; if $k$ is too large (up to $\min\{m,n\}$), $\mathbf{U},\mathbf{V}$ might contain some unnecessary information since in real life the data matrix is expected to be sparse, and it will unnecessarily slow down our algorithm. In most of the experiments, for data matrices of the size $50\times 10$, we choose $k=8$, we also choose $k$ based on the rank of the matrices in some situations. The last hyperparameter we need to care about is the step size (learning rate) $\alpha$ of the gradient descent method in the matrix factorization algorithm. For convenience, in our experiments we use constant step size instead of adaptive step size. If $\alpha$ is too small, it would take too long for the algorithm to find the local minimum; if $\alpha$ is too large, it is possible for the algorithm to bypass the local minimum every time and never find it. In most of the experiments, we use $\alpha = 0.0005$ and there are also circumstances when we need to adjust the value of $\alpha$.
+## Hyperparameters
+
+Choosing the hyperparameters for these algorithms is subtle but very important. Both direct SVD model and matrix factorization model need us to choose an appropriate $k$ which is the length of the latent vectors where $\mathbf{U} \in \mathbb{R}^{m\times k}, \mathbf{V} \in\mathbb{R}^{n\times k}$. If $k$ is too small, the error is expected to be very large since only a few features have been captured in $\mathbf{U}$ and $\mathbf{V}$, then $\mathbf{U}\mathbf {V}^T$ can not represent the whole complete matrix; if $k$ is too large (up to $\min\{m,n\}$), $\mathbf{U},\mathbf{V}$ might contain some unnecessary information since in real life the data matrix is expected to be sparse, and it will unnecessarily slow down our algorithm. In most of the experiments, for data matrices of the size $50\times 10$, we choose $k=8$, we also choose $k$ based on the rank of the matrices in some situations. 
+
+The last hyperparameter we need to care about is the step size (learning rate) $\alpha$ of the gradient descent method in the matrix factorization algorithm. For convenience, in our experiments we use constant step size instead of adaptive step size. If $\alpha$ is too small, it would take too long for the algorithm to find the local minimum; if $\alpha$ is too large, it is possible for the algorithm to bypass the local minimum every time and never find it. In most of the experiments, we use $\alpha = 0.0005$ and there are also circumstances when we need to adjust the value of $\alpha$.
+
+
+## Error vs. Sparsity \& Rank
+For each of the three matrix completion models respectively, we mainly consider two factors that might influence the matrix completion error: one is the sampling probabilities which determine the sparsity of the data matrices $\A$, the other is the rank of the original complete matrices $\M$. 
+
+## Direct Singular Value Decomposition
+As shown in Figure \ref{fig:dsvd_pr_k6} and Figure \ref{fig:dsvd_pr_k9}, as the sampling probabilities approach one, the errors produced by direct SVD are decreasing to zero, and the rank of the complete matrices $\M$ seem to have little impact on the errors. However, in Figure \ref{fig:dsvd_pr_k6} when $k=6$, we notice that matrices of rank seven and nine produce larger errors near $p = 1$; while in Figure \ref{fig:dsvd_pr_k9} when $k=9$, matrices of all ranks produce nearly zero errors. This could be explained by the construction of this algorithm, where we only choose the first $k$ left singular vectors and the first $k$ right singular vectors to form the user-feature matrix and item-feature matrix. When $k$ is larger than the rank of the complete matrix $\M$, we are essentially doing a reduced singular value decomposition which is expected to achieve exact recovery on the set of known entries; when $k$ is smaller than the rank of the complete matrix $\M$, it is possible for the algorithm to miss some important latent features and thus result in larger error.
+\begin{figure}
+    \centering
+    \includegraphics[width = 0.8\linewidth]{dsvd_pr_k6.png}
+    \caption{Error vs. Sparsity \& Rank for direct singular value decomposition model, with $k=6$}
+    \label{fig:dsvd_pr_k6}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width = 0.8\linewidth]{dsvd_pr_k9.png}
+    \caption{Error vs. Sparsity \& Rank for direct singular value decomposition model, with $k=9$}
+    \label{fig:dsvd_pr_k9}
+\end{figure}
+
+
+
+
+## Matrix Factorization
+As shown in Figure \ref{fig:bsvd_pr_k6} and Figure \ref{fig:bsvd_pr_a4}, in general, as the sampling probabilities approach one, the errors produced by matrix factorization are decreasing to zero, and the rank of the complete matrices $\M$ seem to have little impact on the errors. However, in Figure \ref{fig:bsvd_pr_k6} when $k = 6$ and $\alpha = 0.0005$, we notice that matrices of rank seven produce larger errors near $p = 1$, and the errors produced by matrices of rank nine even increase near $p=1$; while in Figure \ref{fig:bsvd_pr_a4} when $k = 6$ and $\alpha = 0.0001$, errors produced by matrices of all ranks decrease as the sampling probabilities approach one, but the errors in the end are much larger than those in Figure \ref{fig:bsvd_pr_k6}. A possible explanation for this is that the appropriate step size $\alpha$ is very sensitive to our input matrices. From Figure \ref{fig:bsvd_pr_a4} we could conclude that $\alpha = 0.0001$ is not large enough for the algorithm to converge; And the increase of errors in Figure \ref{fig:bsvd_pr_k6} is probably because $\alpha = 0.0005$ is not small enough for matrices with few missing entries since when $p\approx 1$, our starting point is really close to the optimal solution, and a large step size could even increase the error.
+
+\begin{figure}
+    \centering
+    \includegraphics[width = 0.8\linewidth]{bsvd_pr_k6.png}
+    \caption{Error vs. Sparsity \& Rank for matrix factorization model, with $k=6$ and $\alpha = 0.0005$}
+    \label{fig:bsvd_pr_k6}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width = 0.8\linewidth]{bsvd_pr_a4.png}
+    \caption{Error vs. Sparsity \& Rank for matrix factorization model, with $k=9$ and $\alpha = 0.0001$}
+    \label{fig:bsvd_pr_a4}
+\end{figure}
