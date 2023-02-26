@@ -165,24 +165,18 @@ besides gradient descent (GD) method, we could also choose a much faster stochas
 
 These theoretical results could be verified by the experiments shown in Figure \ref{fig:sgd_pr}, where the plot on the left shows that SGD produces much larger error than GD, and the plot on the right suggests that when $p$ is small, that is, when the data matrix is sparse, SGD is much faster than GD; but as $p$ approaches one, SGD could be even slower than GD.
 
-\begin{figure}
-    \centering
-    \includegraphics[width = 0.8\linewidth]{gd.png}
-    \caption{algorithm for matrix factorization using gradient descent; \emph{Recommendation Systems, Charu C. Aggarwal (2016), Chapter 3.6 Latent Factor Models} \cite{book}}
-    \label{fig:gd}
-\end{figure}
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./images/gd.png" width="600">
+  <img alt="algorithm for matrix factorization using gradient descent" src="./images/gd.png">
+</picture>
 
-\begin{figure}
-    \centering
-    \includegraphics[width = 0.8\linewidth]{sgd.png}
-    \caption{algorithm for matrix factorization using stochastic gradient descent; \emph{Recommendation Systems, Charu C. Aggarwal (2016), Chapter 3.6 Latent Factor Models} \cite{book}}
-    \label{fig:sgd}
-\end{figure}
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./images/sgd.png" width="600">
+  <img alt="algorithm for matrix factorization using stochastic gradient descent" src="./images/sgd.png">
+</picture>
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./images/sgd_pr.png" width="600">
+  <img alt="GD vs. SGD; the plot on the left shows the matrix completion errors, and the plot on the right shows the time each algorithm took" src="./images/sgd_pr.png">
+</picture>
 
-\begin{figure}
-    \centering
-    \includegraphics[width = \linewidth]{sgd_pr.png}
-    \caption{GD vs. SGD; the plot on the left shows the matrix completion errors, and the plot on the right shows the time each algorithm took}
-    \label{fig:sgd_pr}
-\end{figure}
