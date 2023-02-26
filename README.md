@@ -160,23 +160,36 @@ Now in order to compare the three different matrix completion methods, we fix th
 
 ## GD vs. SGD
 For matrix factorization model where we need to minimize the loss function 
-$$E = \frac{1}{2}\underset{(i,j)\in \Omega}{\sum_{i=1}^m\sum_{j=1}^n}(A_{ij}-\sum_{r=1}^{k}\mathbf{u}_{ir}\mathbf{v}_{jr})^2 = \frac{1}{2}\underset{(i,j)\in \Omega}{\sum_{i=1}^m\sum_{j=1}^n}e_{ij}^2,$$
-besides gradient descent (GD) method, we could also choose a much faster stochastic gradient descent (SGD) method. In each iteration of gradient descent, the algorithm needs to compute the entire gradient matrix $(e_{ij})$ and update all the $(mk+nk)$ entries in $\U$ and $\V$, which is shown in Figure \ref{fig:gd}; while in each iteration of stochastic gradient descent, it randomly chooses some $e_{ij}$ as an approximation to the gradient and update $2k$ entries in $\u_i$ and $\v_j$, which is shown in Figure \ref{fig:sgd}. The operation count for each iteration in gradient descent is $2km_sn_s+2km_sn+2kmn_s+mk+nk$ and for each iteration in stochastic gradient descent is $6km_sn_s + 2m_sn_s$, where $m_s,n_s$ denote the number of known entries in rows and columns respectively. When the data matrix is sparse, we have $2km_sn_s+2km_sn+2kmn_s \geqslant 6km_sn_s$ and $mk+nk \geqslant 2m_sn_s$, which means SGD has less operation than GD and is thus faster; however when the data matrix is almost fully observed, we have $m\approx m_s, n\approx n_s$, then $6km_sn_s \approx 2km_sn_s+2km_sn+2kmn_s$ and $2m_sn_s$ could be even greater than $mk+nk$. 
 
-These theoretical results could be verified by the experiments shown in Figure \ref{fig:sgd_pr}, where the plot on the left shows that SGD produces much larger error than GD, and the plot on the right suggests that when $p$ is small, that is, when the data matrix is sparse, SGD is much faster than GD; but as $p$ approaches one, SGD could be even slower than GD.
+$$E = \frac{1}{2}\underset{(i,j)\in \Omega}{\sum_{i=1}^m\sum_{j=1}^n}(A_{ij}-\sum_{r=1}^{k}\mathbf{u}\_{ir}\mathbf{v}\_{jr})^2 = \frac{1}{2}\underset{(i,j)\in \Omega}{\sum_{i=1}^m\sum_{j=1}^n}e_{ij}^2,$$
+
+besides gradient descent (GD) method, we could also choose a much faster stochastic gradient descent (SGD) method. In each iteration of gradient descent, the algorithm needs to compute the entire gradient matrix $(e_{ij})$ and update all the $(mk+nk)$ entries in $\mathbf{U}$ and $\mathbf{V}$, which is shown in the following first figure; while in each iteration of stochastic gradient descent, it randomly chooses some $e_{ij}$ as an approximation to the gradient and update $2k$ entries in $\mathbf{u}\_i$ and $\mathbf{v}\_j$, which is shown in the following second figure. The operation count for each iteration in gradient descent is $2km_sn_s+2km_sn+2kmn_s+mk+nk$ and for each iteration in stochastic gradient descent is $6km_sn_s + 2m_sn_s$, where $m_s,n_s$ denote the number of known entries in rows and columns respectively. When the data matrix is sparse, we have $2km_sn_s+2km_sn+2kmn_s \geqslant 6km_sn_s$ and $mk+nk \geqslant 2m_sn_s$, which means SGD has less operation than GD and is thus faster; however when the data matrix is almost fully observed, we have $m\approx m_s, n\approx n_s$, then $6km_sn_s \approx 2km_sn_s+2km_sn+2kmn_s$ and $2m_sn_s$ could be even greater than $mk+nk$. 
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./images/gd.png" width="600">
+  <source media="(prefers-color-scheme: dark)" srcset="./images/gd.png" width="400">
   <img alt="algorithm for matrix factorization using gradient descent" src="./images/gd.png">
 </picture>
-
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./images/sgd.png" width="600">
+  <source media="(prefers-color-scheme: dark)" srcset="./images/sgd.png" width="400">
   <img alt="algorithm for matrix factorization using stochastic gradient descent" src="./images/sgd.png">
 </picture>
+
+These theoretical results could be verified by the experiments shown in the following figure, where the plot on the left shows that SGD produces much larger error than GD, and the plot on the right suggests that when $p$ is small, that is, when the data matrix is sparse, SGD is much faster than GD; but as $p$ approaches one, SGD could be even slower than GD.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="./images/sgd_pr.png" width="600">
   <img alt="GD vs. SGD; the plot on the left shows the matrix completion errors, and the plot on the right shows the time each algorithm took" src="./images/sgd_pr.png">
 </picture>
+
+
+
+# Conclusion
+
+We have implemented three matrix completion algorithms based on direct singular value decomposition, matrix factorization and nuclear norm minimization, and we investigate different factors that might influence the matrix completion error. 
+
+On our synthetic data matrices of size $50\times 10$ and a certain fixed rank, it turns out that with appropriate hyperparameters, the errors produced by three different methods all decrease to zero as the number of known entries in the data matrices increase. For nuclear norm minimization algorithms, we also find out that matrices of lower rank would produce fewer errors, which is consistent with the rank minimization construction of this model. For direct SVD algorithms, choosing the right truncated size turns out to be very important to capture enough latent features as well as avoid unnecessary information. For matrix factorization algorithms, it is critical to choose the appropriate step size of gradient descent, such that the algorithm will neither bypass the local minimum nor spend too much time finding the local minimum. This hyperparameter turns out to be much more sensitive to the input matrices than others, the experiments suggest that we need to adjust the step size to the sparsity of the data matrices.
+
+We compare these three matrix completion methods on the same data set and it shows that matrix factorization and nuclear norm minimization have much better performances than the direct SVD method, and matrix factorization outperforms nuclear norm minimization when the data matrix is sparse. For matrix factorization model which involves minimizing the loss function, we also compare gradient descent method and stochastic gradient method, and we have verified that SGD is much faster than GD while it produces much larger error.
+
+Some problems of interest for future work would be: for direct SVD algorithms, is there a way to decide the best truncated size? For matrix factorization algorithms, what if we use adaptive step size instead of constant step size? 
 
